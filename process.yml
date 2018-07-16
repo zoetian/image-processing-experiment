@@ -1,0 +1,13 @@
+provider:
+  name: faas
+  gateway: http://localhost:9999
+
+functions:
+  process:
+    lang: Dockerfile
+    handler: ./process
+    image: zoetian/image-processing:latest
+    environment:
+      TF_CPP_MIN_LOG_LEVEL: "3"
+      read_timeout: "200"
+      write_timeout: "200"

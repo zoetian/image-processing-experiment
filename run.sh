@@ -20,4 +20,4 @@ if [ -z "$STYLE_INDEX" ]; then
     STYLE_INDEX=1
 fi
 
-$(eval "curl -X POST -H X-style-name:$STYLE -H X-style-index:$STYLE_INDEX --data-binary @$IMAGE 'http://localhost:9999/function/artist' > styled/""$STYLE""_""$STYLE_INDEX""_""$(basename $IMAGE)" 2>/dev/null)
+$(eval "curl -X POST -H X-style-name:$STYLE -H X-style-index:$STYLE_INDEX --data-binary @$IMAGE 'http://localhost:9999/function/artist' > output/""$STYLE""_""$STYLE_INDEX""_""$(basename $IMAGE)" 2>/dev/null)
