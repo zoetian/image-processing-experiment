@@ -1,4 +1,6 @@
 .DS_Store
 template
 build
-fass-cli
+faas-cli
+/output/
+__pycache__/

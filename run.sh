@@ -1,23 +1,43 @@
-IMAGE=$1
-if [ -z "$IMAGE" ]; then
-    echo "IMAGE is empty"
-    echo usage: $0 image style style_index
-    echo e.g: $0 processing/raw_image/Rome.jpg varied 12
+#!/usr/bin/env bash
+# Stylizes an image and writes the result to output/.
+#
+# URL defaults to the container started by `docker compose up`. When deployed
+# through an OpenFaaS gateway use e.g.
+#   URL=http://127.0.0.1:8080/function/process ./run.sh ...
+set -euo pipefail
+
+usage() {
+    echo "usage: $0 image [style] [style_index]"
+    echo "e.g.:  $0 process/raw_image/Rome.jpg varied 12"
     echo ""
-    echo "0-9 for monet, 10-30 for varied."
+    echo "style is monet (index 0-9) or varied (index 0-31)."
+}
+
+if [ $# -lt 1 ] || [ ! -f "$1" ]; then
+    usage
     exit 1
 fi
 
-STYLE=$2
-if [ -z "$STYLE" ]; then
-    echo "STYLE is empty, defaulting to varied"
-    STYLE="varied"
+IMAGE=$1
+STYLE=${2:-varied}
+STYLE_INDEX=${3:-1}
+URL=${URL:-http://127.0.0.1:8080}
+
+mkdir -p output
+OUT="output/${STYLE}_${STYLE_INDEX}_$(basename "$IMAGE")"
+
+TMP=$(mktemp)
+trap 'rm -f "$TMP"' EXIT
+
+if ! curl --fail-with-body -sS -X POST \
+    -H "X-Style-Name: $STYLE" \
+    -H "X-Style-Index: $STYLE_INDEX" \
+    --data-binary "@$IMAGE" \
+    -o "$TMP" \
+    "$URL"; then
+    cat "$TMP" >&2
+    exit 1
 fi
 
-STYLE_INDEX=$3
-if [ -z "$STYLE_INDEX" ]; then
-    echo "STYLE_INDEX is empty, defaulting to 1"
-    STYLE_INDEX=1
-fi
-
-$(eval "curl -X POST -H X-style-name:$STYLE -H X-style-index:$STYLE_INDEX --data-binary @$IMAGE 'http://localhost:9999/function/artist' > output/""$STYLE""_""$STYLE_INDEX""_""$(basename $IMAGE)" 2>/dev/null)
+mv "$TMP" "$OUT"
+echo "wrote $OUT"

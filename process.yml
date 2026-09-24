@@ -1,13 +1,10 @@
+version: 1.0
 provider:
-  name: faas
-  gateway: http://localhost:9999
+  name: openfaas
+  gateway: http://127.0.0.1:8080
 
 functions:
   process:
-    lang: Dockerfile
+    lang: dockerfile
     handler: ./process
     image: zoetian/image-processing:latest
-    environment:
-      TF_CPP_MIN_LOG_LEVEL: "3"
-      read_timeout: "200"
-      write_timeout: "200"
